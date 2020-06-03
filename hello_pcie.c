@@ -153,21 +153,30 @@ static int hello_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 {
 	int i;
 	int result = 0;
+
+pr_info("pci_enable_device()\n");
+
 	//使能pci设备
 	if (pci_enable_device(pdev)){
         result = -EIO;
 		goto end;
 	}
 	
+pr_info("pci_set_master()\n");
+
 	pci_set_master(pdev);	
 	my_device.pci_dev=pdev;
  
+pr_info("pci_request_regions()\n");
+
 	if(unlikely(pci_request_regions(pdev,DEV_NAME))){
 		DEBUG_ERR("failed:pci_request_regions\n");
 		result = -EIO;
 		goto enable_device_err;
 	}
 	
+pr_info("pci_resource_start()\n");
+
 	//获得bar0的物理地址和虚拟地址
 	bar0_phy = pci_resource_start(pdev,0);
 	if(bar0_phy<0){
@@ -176,12 +185,16 @@ static int hello_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 		goto request_regions_err;
 	}
 	
+pr_info("pci_resource_len()\n");
+
 	//假设bar0是作为内存，流程是这样的，但是在本程序中不对bar0进行任何操作。
 	bar0_length = pci_resource_len(pdev,0);
 	if(bar0_length!=0){
 		bar0_vir = (unsigned long)ioremap(bar0_phy,bar0_length);
 	}
 	
+pr_info("pci_alloc_consistent() 1\n");
+
 	//申请一块DMA内存，作为源地址，在进行DMA读写的时候会用到。
 	dma_src_vir=(dma_addr_t)pci_alloc_consistent(pdev,DMA_BUFFER_SIZE,&dma_src_phy);
 	if(dma_src_vir != 0){
@@ -192,6 +205,8 @@ static int hello_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 		goto free_bar0;
 	}
 	
+pr_info("pci_alloc_consistent() 2\n");
+
 	//申请一块DMA内存，作为目的地址，在进行DMA读写的时候会用到。
 	dma_dst_vir=(dma_addr_t)pci_alloc_consistent(pdev,DMA_BUFFER_SIZE,&dma_dst_phy);
 	if(dma_dst_vir!=0){
@@ -201,6 +216,9 @@ static int hello_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 	} else {
 		goto alloc_dma_src_err;
 	}
+
+pr_info("pci_enable_msi()\n");
+
 	//使能msi，然后才能得到pdev->irq
 	 result = pci_enable_msi(pdev);
 	 if (unlikely(result)){
@@ -208,12 +226,16 @@ static int hello_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 		goto alloc_dma_dst_err;
     }
 	
+pr_info("request_irq()\n");
+
 	result = request_irq(pdev->irq, hello_interrupt, 0, DEV_NAME, my_device.pci_dev);
     if (unlikely(result)){
        DEBUG_ERR("failed:request_irq\n");
 	   goto enable_msi_error;
     }
 	
+pr_info("dma_init()\n");
+
 	//DMA 的读写初始化
 	dma_init();
 	
@@ -310,13 +332,17 @@ static struct file_operations hello_fops = {
 static int hello_drv_init(void)
 {
 	int ret;
+
+pr_info("hello_drv_init()\n");
+pr_info("pci_register_driver()\n");
+
 	ret = pci_register_driver(&hello_driver);
 	if (ret < 0) {
 		printk("failed: pci_register_driver\n");
 		return ret;
 	}
 
-pr_info("hello_drv_init()\n");
+pr_info("alloc_chrdev_region()\n");
 
 	ret=alloc_chrdev_region(&my_device.devno,0,DEVICE_NUMBER,"hello");
 	if (ret < 0) {
