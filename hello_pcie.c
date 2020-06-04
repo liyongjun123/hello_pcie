@@ -109,14 +109,22 @@ void dma_init(void)
 	u32 msi_addr_h;
 	u32 msi_data;
 	
+pr_info("pci_find_capability()\n");
+
 	//1.dma 通道0 写初始化 。如何访问DMA global register 寄存器组需要根据具体的硬件，可以通过pci_write/read_config_word/dword，
 	//也可以通过某个bar，比如通过bar0+偏移量访问。
 	//1.1 DMA write engine enable =0x1，这里请根据自己的芯片填写
 	//dma_write_config_dword(->pci_dev,DMA write engine enable,0x1);	
 	//1.2 获取msi能力寄存器的地址
 	pos =pci_find_capability(my_device.pci_dev,PCI_CAP_ID_MSI);
+
+pr_info("pci_read_config_word()\n");
+
 	//1.3 读取msi的协议部分，得到pci设备是32位还是64位，不同的架构msi data寄存器地址同
 	pci_read_config_word(my_device.pci_dev,pos+2,&msi_control);
+
+pr_info("pci_read_config_dword()\n");
+	
 	//1.4 读取msi能力寄存器组中的地址寄存器的值
 	pci_read_config_dword(my_device.pci_dev,pos+4,&msi_addr_l);	
 	//1.5 设置 DMA write done IMWr Address Low.这里请根据自己的芯片填写
@@ -124,6 +132,10 @@ void dma_init(void)
 	//1.6 设置 DMA write abort IMWr Address Low.这里请根据自己的芯片填写
 	//dma_write_config_dword(my_device.pci_dev,DMA write abort IMWr Address Low,msi_addr_l);
 	
+
+
+pr_info("pci_read_config_dword()\n");
+
 	if(msi_control&0x80){
 		//64位的
 		//1.7 读取msi能力寄存器组中的高32位地址寄存器的值
