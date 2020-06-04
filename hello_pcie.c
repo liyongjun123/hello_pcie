@@ -30,7 +30,7 @@ MODULE_DESCRIPTION("pcie device driver");
 //1M 
 #define DMA_BUFFER_SIZE 1*1024*1024 
 #define FASYNC_MINOR 1
-#define FASYNC_MAJOR 244
+#define FASYNC_MAJOR 100
 #define DEVICE_NUMBER 1
  
 static struct class * hello_class;
