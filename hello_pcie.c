@@ -123,7 +123,7 @@ pr_info("pci_read_config_word()\n");
 	//1.3 读取msi的协议部分，得到pci设备是32位还是64位，不同的架构msi data寄存器地址同
 	pci_read_config_word(my_device.pci_dev,pos+2,&msi_control);
 
-pr_info("pci_read_config_dword()\n");
+pr_info("pci_read_config_dword() 1\n");
 	
 	//1.4 读取msi能力寄存器组中的地址寄存器的值
 	pci_read_config_dword(my_device.pci_dev,pos+4,&msi_addr_l);	
@@ -134,7 +134,7 @@ pr_info("pci_read_config_dword()\n");
 	
 
 
-pr_info("pci_read_config_dword()\n");
+pr_info("pci_read_config_dword() 2\n");
 
 	if(msi_control&0x80){
 		//64位的
@@ -252,23 +252,40 @@ pr_info("dma_init()\n");
 	//DMA 的读写初始化
 	dma_init();
 	
+pr_info("pci_disable_msi()\n");
+
 enable_msi_error:
 		pci_disable_msi(pdev);
+
+pr_info("ClearPageReserved()\n");
+
 alloc_dma_dst_err:
 	for(i=0;i<DMA_BUFFER_SIZE/PAGE_SIZE;i++){
 		ClearPageReserved(virt_to_page(dma_dst_phy+i*PAGE_SIZE));
 	}
+
+pr_info("pci_free_consistent()\n");
+
 	pci_free_consistent(pdev,DMA_BUFFER_SIZE,(void *)dma_dst_vir,dma_dst_phy);
+
 alloc_dma_src_err:
 	for(i=0;i<DMA_BUFFER_SIZE/PAGE_SIZE;i++){
 		ClearPageReserved(virt_to_page(dma_src_phy+i*PAGE_SIZE));
 	}
 	pci_free_consistent(pdev,DMA_BUFFER_SIZE,(void *)dma_src_vir,dma_src_phy);
+
+pr_info("iounmap()\n");
+
 free_bar0:
 	iounmap((void *)bar0_vir);
+
+pr_info("pci_release_regions()\n");
+
 request_regions_err:
 	pci_release_regions(pdev);
 	
+pr_info("pci_disable_device()\n");
+
 enable_device_err:
 	pci_disable_device(pdev);
 end:
