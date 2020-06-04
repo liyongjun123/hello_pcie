@@ -252,6 +252,8 @@ pr_info("dma_init()\n");
 	//DMA 的读写初始化
 	dma_init();
 	
+return 0;
+
 pr_info("pci_disable_msi()\n");
 
 enable_msi_error:
