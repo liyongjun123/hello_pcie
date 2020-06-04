@@ -28,7 +28,8 @@ MODULE_DESCRIPTION("pcie device driver");
 #endif
  
 //1M 
-#define DMA_BUFFER_SIZE 1*1024*1024 
+// #define DMA_BUFFER_SIZE 1*1024*1024 
+#define DMA_BUFFER_SIZE 512
 #define FASYNC_MINOR 1
 #define FASYNC_MAJOR 100
 #define DEVICE_NUMBER 1
